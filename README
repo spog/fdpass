@@ -1,0 +1,68 @@
+FILE DESCRIPTOR PASSING (fdpass) LIBRARY PROJECT
+================================================
+
+--------------------------------------------------------------------
+Copyright (C) 2015 Samo Pogacnik <samo_pogacnik@t-2.net>
+All rights reserved.
+
+The "fdpass" software project is provided under the terms of the
+BSD 3-Clause license, which is available in the LICENSE file of this
+project.
+--------------------------------------------------------------------
+
+The fdpass library provides file descriptor passing functions.
+
+Features:
+=========
+
+Building:
+=========
+
+Native build:
+-------------
+
+Out-of-source-build (preferred):
+--------------------------------
+$ cd fdpass
+$ mkdir build
+$ cd build
+$ cmake ../
+$ make
+
+In-source-build:
+----------------
+$ cd fdpass
+$ cmake ./
+$ make
+
+Installation:
+=============
+
+$ make install
+
+If you need to specify installation path:
+-----------------------------------------
+cmake <src_dir> -DCMAKE_INSTALL_PREFIX=<install_dir>
+
+For example:
+$ cmake ../ -DCMAKE_INSTALL_PREFIX=../install
+$ make
+$ make install
+
+And you need to cross-compile as well:
+--------------------------------------
+cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_TOOLCHAIN_FILE=../toolchains/Yocto-arm-linux-gnu.cmake
+
+Cleaning:
+=========
+
+$ make clean
+
+If you want to remove all files not under version control and you are using git:
+--------------------------------------------------------------------------------
+$ git clean -d -f -x
+
+Demos:
+======
+Programs included under "demos" directory demonstrate usage of the fdpass library.
+
