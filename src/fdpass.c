@@ -20,10 +20,10 @@ int fdpass_init_server(const char *path)
 	struct sockaddr_un addr;
 
 	if (path == NULL)
-		return_err("FD passing server socket name NOT PROVIDED (NULL)!\n");
+		evm_log_return_err("FD passing server socket name NOT PROVIDED (NULL)!\n");
 
 	if (*path == '\0')
-		return_err("FD passing server socket name is empty string!\n");
+		evm_log_return_err("FD passing server socket name is empty string!\n");
 
 	/* Initialize FD passing socket address... */
 	status = stat(path, &st);
@@ -32,15 +32,15 @@ int fdpass_init_server(const char *path)
 		if ((st.st_mode & S_IFMT) == S_IFSOCK) {
 			status = unlink(path);
 			if (status != 0) {
-				return_err("Error unlinking the socket node");
+				evm_log_return_err("Error unlinking the socket node");
 			}
 		} else {
 			/* Not a socket, so do not unlink */
-			return_err("The path already exists and is not a socket node.\n");
+			evm_log_return_err("The path already exists and is not a socket node.\n");
 		}
 	} else {
 		if (errno != ENOENT) {
-			return_err("Error stating the socket node path");
+			evm_log_return_err("Error stating the socket node path");
 		}
 	}
 
@@ -52,17 +52,17 @@ int fdpass_init_server(const char *path)
 	/* Socket operations */
 	listen_sd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (listen_sd == -1)
-		return_err("socket()\n");
+		evm_log_return_err("socket()\n");
 
 	status = bind(listen_sd, (struct sockaddr *)&addr, sizeof(struct sockaddr_un));
 	if (status == -1)
-		return_err("bind() sockfd=%d\n", listen_sd);
+		evm_log_return_err("bind() sockfd=%d\n", listen_sd);
 
 	status = listen(listen_sd, 1024);
 	if (status == -1)
-		return_err("listen() sockfd=%d\n", listen_sd);
+		evm_log_return_err("listen() sockfd=%d\n", listen_sd);
 
-	log_normal("FD passing server socket ready.\n");
+	evm_log_debug("FD passing listening socket ready (bind FD: %d).\n", listen_sd);
 
 	return listen_sd;
 }
@@ -74,10 +74,10 @@ int fdpass_init_client(const char *path)
 	struct sockaddr_un addr;
 
 	if (path == NULL)
-		return_err("FD passing client socket name NOT PROVIDED (NULL)!\n");
+		evm_log_return_err("FD passing client socket name NOT PROVIDED (NULL)!\n");
 
 	if (*path == '\0')
-		return_err("FD passing client socket name is empty string!\n");
+		evm_log_return_err("FD passing client socket name is empty string!\n");
 
 	/* Initialize FD passing socket address... */
 	status = stat(path, &st);
@@ -85,11 +85,11 @@ int fdpass_init_client(const char *path)
 		/* Fle exists - check if socket */
 		if ((st.st_mode & S_IFMT) != S_IFSOCK) {
 			/* Not a socket, so do not unlink */
-			return_err("The path already exists and is not a socket node.\n");
+			evm_log_return_err("The path already exists and is not a socket node.\n");
 		}
 	} else {
 		if (errno != ENOENT) {
-			return_err("Error stating the socket node path");
+			evm_log_return_err("Error stating the socket node path");
 		}
 	}
 
@@ -101,13 +101,13 @@ int fdpass_init_client(const char *path)
 	/* Socket operations */
 	fdpass_sd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fdpass_sd == -1)
-		return_err("socket()\n");
+		evm_log_return_err("socket()\n");
 
 	status = connect(fdpass_sd, (struct sockaddr *)&addr, sizeof(struct sockaddr_un));
 	if (status == -1)
-		return_err("connect() sockfd=%d\n", fdpass_sd);
+		evm_log_return_err("connect() sockfd=%d\n", fdpass_sd);
 
-	log_normal("FD passing client socket ready.\n");
+	evm_log_debug("FD passing client socket ready (connect FD: %d).\n", fdpass_sd);
 
 	return fdpass_sd;
 }
@@ -121,8 +121,9 @@ int fdpass_accept(int listen_sd)
 	} while ((fdpass_sd < 0) && (errno == EINTR));
 
 	if (fdpass_sd < 0)
-		return_err("accept()\n");
+		evm_log_return_err("accept()\n");
 
+	evm_log_debug("FD passing server socket ready (connect FD: %d).\n", fdpass_sd);
 	return fdpass_sd;
 }
 
@@ -154,6 +155,7 @@ int fdpass_send(int fdpass_sd, int fd)
 
 	/* Setup the FD payload: */
 	*((int *)CMSG_DATA(cmsg)) = fd;
+	evm_log_debug("Sending descriptor = %d\n", fd);
 
 	return sendmsg(fdpass_sd, &msg, 0);
 }
@@ -190,9 +192,9 @@ int fdpass_recv(int sd)
 	/* Initialize the FD payload as an ERROR: */
 	*(int*)CMSG_DATA(cmsg) = -1;
 
-	log_verbose("Waiting on recvmsg\n");
+	evm_log_debug("Waiting on recvmsg\n");
 	if ((ret = recvmsg(sd, &msg, 0)) < 0) {
-		log_error("recvmsg() failed - errno %d", errno);
+		evm_log_error("recvmsg() failed - errno %d", errno);
 		fdpass_close(sd);
 		return -1;
 	} else {
@@ -204,16 +206,16 @@ int fdpass_recv(int sd)
 			(cmsg->cmsg_len < CMSG_LEN(sizeof(int)))
 		) {
 			if (cmsg) {
-			  log_error("Protocol failure: %d %d %d\n", cmsg->cmsg_len, cmsg->cmsg_level, cmsg->cmsg_type);
+			  evm_log_error("Protocol failure: %d %d %d\n", cmsg->cmsg_len, cmsg->cmsg_level, cmsg->cmsg_type);
 			} else {
-			  log_error("Protocol failure: NULL cmsghdr*\n");
+			  evm_log_error("Protocol failure: NULL cmsghdr*\n");
 			}
 			fdpass_close(sd);
 			return -1;
 		} else {
 			fdptr = (int*)CMSG_DATA(cmsg);
 		}
-		log_verbose("Received descriptor = %d\n", fdptr[0]);
+		evm_log_debug("Received descriptor = %d\n", fdptr[0]);
 	}
 
 	fdpass_close(sd);

@@ -38,15 +38,15 @@ include_directories("${project_BINARY_DIR}")
 # Make sure the compiler can find isolated public include files of our fdpass library.
 include_directories (${project_SOURCE_DIR}/include)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFDPASSLOG_MODULE_DEBUG=1 -DFDPASSLOG_MODULE_TRACE=1")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DFDPASSLOG_MODULE_DEBUG=1 -DFDPASSLOG_MODULE_TRACE=1")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DFDPASSLOG_MODULE_DEBUG=1 -DFDPASSLOG_MODULE_TRACE=1")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DEVMLOG_MODULE_DEBUG=1 -DEVMLOG_MODULE_TRACE=1")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DEVMLOG_MODULE_DEBUG=1 -DEVMLOG_MODULE_TRACE=1")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DEVMLOG_MODULE_DEBUG=1 -DEVMLOG_MODULE_TRACE=1")
 
 # Recurse into the "src" subdirectory. This does not actually
 # cause another cmake executable to run. The same process will walk through
 # the project's entire directory structure.
 add_subdirectory (src)
-#add_subdirectory (demos)
+add_subdirectory (demos)
 
 # build a CPack driven installer package
 include (InstallRequiredSystemLibraries)
