@@ -33,7 +33,7 @@ unsigned int log_mask;
 unsigned int evmlog_normal = 1;
 unsigned int evmlog_verbose = 1;
 unsigned int evmlog_trace = 1;
-unsigned int evmlog_debug = 0;
+unsigned int evmlog_debug = 1;
 unsigned int evmlog_use_syslog = 0;
 unsigned int evmlog_add_header = 1;
 
