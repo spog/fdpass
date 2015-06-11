@@ -1,0 +1,14 @@
+# For each component package name specific content may be defined:
+# - runtime content,
+# - content provided for development,
+# - debugging content, 
+# - ...
+
+COMP_PACKAGES=(fdpass fdpass_demos)
+
+COMP_PACKAGE_fdpass=(runtime devel)
+COMP_PACKAGE_fdpass_runtime=("lib")
+COMP_PACKAGE_fdpass_devel=("include" "lib")
+
+COMP_PACKAGE_fdpass_demos=(runtime)
+COMP_PACKAGE_fdpass_demos_runtime=("bin")
